@@ -22,21 +22,47 @@ Please read [OAuth 2.0 Client Credential With Spring Boot](https://developer.okt
 The repository contains three sub-projects:
 - `/secure-server` - a simple test server
 - `/client-webclient` - a client built using the new WebClient
-- `/secure-server` - a client build using the deprecated RestTemplate
+- `/client-resttemplate` - a client build using the deprecated RestTemplate
 
-Before you begin, you’ll need a free Okta developer account. Install the [Okta CLI](https://cli.okta.com) and run `okta register` to sign up for a new account. If you already have an account, run `okta login`. Then, run `okta apps create`. Select the default app name, or change it as you see fit. Choose **Web** and press **Enter**.
+To run the sample app, the first step is to cofigure an Okta OIDC app for all three of the projects. Then, you can run the simple server (which has one endpoint at root). With the server running, you can run either or both of the clients. The clients demonstrate how to use the client credentials grant with Spring's WebClient and RestTemplate in Spring Security 5.
 
-Select **Other**. Then, change the Redirect URI to `http://localhost:8080/authorization-code/callback` and use `http://localhost:8080` for the Logout Redirect URI.
+Before you begin, you’ll need a free Okta developer account. Install the [Okta CLI](https://cli.okta.com) and run `okta register` to sign up for a new account. If you already have an account, run `okta login`. 
 
-Copy `src/main/resources/application.template.yml` to `src/main/resources/application.yml` and fill in the necessary information.
+Navigate a shell to the `/secure-server` sub-project. Run `okta apps create`. Select the default app name, or change it as you see fit. Choose **4: Service (Machine-to-Machine)** and press **Enter**. Select **1: Okta Spring Boot Starter**.
 
-See [these instructions](https://developer.okta.com/blog/2018/07/24/social-spring-boot#configure-google-and-facebook-for-social-login-in-your-spring-boot-app) to complete your social login setup.
+The `secure-server/src/main/resources/application.properties` should look like the following (with you own values for the issuer, client ID, and client secret.
+```properties
+okta.oauth2.issuer=https\://{yourOktaUri}/oauth2/default
+okta.oauth2.client-secret=<yourClientSecret>
+okta.oauth2.client-id={yourclientID}
+```
+
+Start the server. From the `secure-server` directory.
+```bash
+./mvnw spring-boot:run
+```
+
+The values above can be used to fill in the necessary values in the `src/main/resources/application.properties` file in **both** of the client directories.
+
+`src/main/resources/application.properties`
+```properties
+spring.security.oauth2.client.registration.okta.client-id={yourClientId}
+spring.security.oauth2.client.registration.okta.client-secret={yourClientSecret}
+spring.security.oauth2.client.registration.okta.authorization-grant-type=client_credentials
+spring.security.oauth2.client.registration.okta.scope=mod_custom
+spring.security.oauth2.client.provider.okta.token-uri=https://{yourOktaUri}/oauth2/default/v1/token
+spring.main.web-application-type=none
+```
+
+Open a shell and navigate to either of the client sub-project directories. Run the client.
+```bash
+./mvnw spring-boot:run
+```
 
 ## Links
 
 This example uses the following open source libraries:
 
-* [Okta Sign-In Widget](https://github.com/okta/okta-signin-widget)
 * [Okta Spring Boot Starter](https://github.com/okta/okta-spring-boot)
 * [Spring Boot](https://spring.io/projects/spring-boot)
 * [Spring Security](https://spring.io/projects/spring-security)
